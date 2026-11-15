@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 from typing import Sequence
 
@@ -52,6 +53,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.step == "predict" and (args.age is None or args.km is None or args.body is None):
         print(t(lang, "err_age_km_required"), file=sys.stderr)
         return EXIT_INPUT
+    if args.step == "predict":
+        for option, value, example in (("--age", args.age, "3"), ("--km", args.km, "40000")):
+            if not math.isfinite(value):  # nan / inf / -inf would crash or poison the model input
+                print(t(lang, "err_not_finite", option=option, value=value, example=example), file=sys.stderr)
+                return EXIT_INPUT
 
     # Every other step needs Spark, which needs Java: check before starting the JVM.
     problem = steps.check_java(lang)

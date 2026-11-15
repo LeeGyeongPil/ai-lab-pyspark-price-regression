@@ -53,3 +53,20 @@ def test_predict_command_trains_then_reuses_model(shared_spark, tmp_path, capsys
     assert "Predicted price:" in second and "training one first" not in second
     unknown = ["predict", "--age", "3", "--km", "1", "--body", "tractor", "--out", str(tmp_path)]
     assert cli.main(unknown) == 3
+
+
+@pytest.mark.parametrize("extra, option, shown, example", [
+    (["--age", "nan", "--km", "40000"], "--age", "nan", "--age 3"),
+    (["--age", "inf", "--km", "40000"], "--age", "inf", "--age 3"),
+    (["--age", "3", "--km=-inf"], "--km", "-inf", "--km 40000"),
+    (["--age", "3", "--km", "nan"], "--km", "nan", "--km 40000"),
+])
+@pytest.mark.parametrize("lang, phrase", [("en", "finite number"), ("ko", "유한한 숫자")])
+def test_predict_rejects_non_finite_input(monkeypatch, capsys, extra, option, shown, example, lang, phrase):
+    def boom():
+        raise AssertionError("Spark must not start")
+    monkeypatch.setattr(cli, "get_spark", boom)
+    assert cli.main(["predict", *extra, "--body", "suv", "--lang", lang]) == 3
+    err = capsys.readouterr().err
+    assert option in err and len(err.strip().splitlines()) == 1
+    assert phrase in err and shown in err and example in err  # localized text, input value, right example
