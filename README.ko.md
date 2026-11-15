@@ -385,6 +385,7 @@ mean_price = float(train.agg(F.avg(LABEL)).first()[0])
 |---|---|---|
 | `Java 17 이상을 찾지 못했습니다`(영어 화면: `Java 17 or newer was not found`)와 종료 코드 2 | Java 가 없거나 경로에 없음 | Java 17+ 를 설치(위 표)하고 `doctor` 를 다시 실행. Java 가 특이한 곳에 있으면 `JAVA_HOME` 지정 |
 | `JAVA_GATEWAY_EXITED` | JVM 이 임시 폴더에 쓰지 못함 | 데모는 현재 폴더의 `.spark-tmp/` 를 쓰므로 쓸 수 있는지 확인하거나, `SPARK_LOCAL_DIRS` 를 쓸 수 있는 폴더로 지정 |
+| `--age 는 유한한 숫자여야 합니다 (입력값 nan)`(영어 화면: `--age must be a finite number (got nan)`)와 종료 코드 3 | `predict` 가 `nan`·`inf` 입력을 Spark 시작 전에 거부함 | `--age 3 --km 40000` 처럼 일반 숫자를 넣기 |
 | Spark 시작할 때 경고가 나옴 | 로그 설정 전에 JVM 이 찍는 줄 | 정상이니 무시 |
 | `numpy` 가져오기 오류 | MLlib 에 numpy 가 필요 | extra 와 함께 설치: `pyspark[ml]` (`pyproject.toml` 에 이미 있음, `uv sync` 사용) |
 | uv 가 Python 3.15 를 고름 | 아주 새 Python 은 아직 지원하지 않음 | 레포가 `.python-version` 에 3.12 를 고정함. 레포 폴더에서 `uv sync` |

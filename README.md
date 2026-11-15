@@ -385,6 +385,7 @@ mean_price = float(train.agg(F.avg(LABEL)).first()[0])
 |---|---|---|
 | `Java 17 or newer was not found` and exit code 2 | Java is not installed or not on the path | Install Java 17+ (table above), then run `doctor` again. Set `JAVA_HOME` if Java is in an unusual place |
 | `JAVA_GATEWAY_EXITED` | The JVM could not write to its temp folder | The demo uses `.spark-tmp/` in the current folder; make sure it is writable, or set `SPARK_LOCAL_DIRS` to a writable folder |
+| `--age must be a finite number (got nan)` or `--km must be a finite number (got inf)`, exit code 3 | `predict` rejects `nan`/`inf` before starting Spark | Pass ordinary numbers, for example `--age 3 --km 40000` |
 | Warnings printed when Spark starts | The JVM prints them before logging is configured | Normal, ignore them |
 | Import error about `numpy` | MLlib needs numpy | Install with the extra: `pyspark[ml]` (already in `pyproject.toml`; use `uv sync`) |
 | uv picks Python 3.15 | A very new Python is not supported yet | The repo pins 3.12 in `.python-version`; run `uv sync` from the repo folder |
