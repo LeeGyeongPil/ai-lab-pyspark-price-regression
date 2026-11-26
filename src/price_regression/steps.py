@@ -299,6 +299,11 @@ def ensure_model(run: Run) -> PipelineModel:
     return model
 
 
+def age_label(age: float) -> str:
+    """Show the model age without rounding: 4.0 -> '4', 3.5 -> '3.5'."""
+    return f"{float(age):g}"
+
+
 def step_predict(run: Run, age: float, km: float, body: str) -> int:
     run.title("predict")
     model = ensure_model(run)
@@ -307,7 +312,7 @@ def step_predict(run: Run, age: float, km: float, body: str) -> int:
     except UnknownBodyError as exc:
         run.say("predict_unknown_body", body=exc.body, known=", ".join(exc.known))
         return EXIT_INPUT
-    run.say("predict_result", price=fmt(result.price, 1), unit=run.unit, age=fmt(age, 0), km=f"{km:,.0f}", body=body)
+    run.say("predict_result", price=fmt(result.price, 1), unit=run.unit, age=age_label(age), km=f"{km:,.0f}", body=body)
     for key in result.warnings:
         run.say(key)
     return EXIT_OK
