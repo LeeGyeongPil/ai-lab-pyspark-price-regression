@@ -16,7 +16,7 @@ from .evaluate import (
 )
 from .i18n import t
 from .pipeline import TRAIN_FRACTION, body_labels, fit_model, named_coefficients, split_train_test
-from .predict import UnknownBodyError, load_model, predict_price, save_model
+from .predict import UnknownBodyError, load_model, model_path, predict_price, read_meta, save_model, write_meta
 from .report import fmt, table
 from .residuals import residuals_by_body, residuals_by_km
 from .session import default_tmp_dir, get_spark
@@ -291,12 +291,27 @@ def step_trap(run: Run) -> None:
 def ensure_model(run: Run) -> PipelineModel:
     """Load the saved model, or train and save one if none exists yet."""
     model = load_model(run.opts.out)
+    if model is not None:
+        note_option_mismatch(run)
     if model is None:
-        from .predict import model_path
         run.say("predict_no_model", path=model_path(run.opts.out), seed=run.opts.seed, rows=run.opts.rows)
         model = run.model
         save_model(model, run.opts.out)
+        write_meta(run.opts.out, run.opts.seed, run.opts.rows, run.opts.nonlinear)
     return model
+
+
+def note_option_mismatch(run: Run) -> None:
+    """Print one line when the saved model was trained with other options than the ones given now."""
+    meta = read_meta(run.opts.out)
+    if meta is None:
+        return  # older model without metadata: nothing to compare
+    o = run.opts
+    if (meta["seed"], meta["rows"], meta["nonlinear"]) == (o.seed, o.rows, o.nonlinear):
+        return
+    kind = t(o.lang, "data_nonlinear" if meta["nonlinear"] else "data_linear")
+    run.say("predict_option_mismatch", seed=meta["seed"], rows=meta["rows"], kind=kind,
+            path=model_path(o.out))
 
 
 def age_label(age: float) -> str:
@@ -332,6 +347,7 @@ def step_all(run: Run) -> None:
     out = Path(run.opts.out)
     out.mkdir(parents=True, exist_ok=True)
     model_dir = save_model(run.model, out)
+    write_meta(out, run.opts.seed, run.opts.rows, run.opts.nonlinear)
     run.summary.update(
         rows=run.opts.rows, seed=run.opts.seed, nonlinear=run.opts.nonlinear, lang=run.opts.lang,
         elapsed_seconds=round(time.time() - started, 1),

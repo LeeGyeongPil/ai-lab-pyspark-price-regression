@@ -1,6 +1,7 @@
 """Save/load the fitted pipeline and predict the price of one new car."""
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -34,6 +35,28 @@ def save_model(model: PipelineModel, out_dir: str | Path) -> Path:
     path = model_path(out_dir)
     model.write().overwrite().save(str(path))
     return path
+
+
+def meta_path(out_dir: str | Path) -> Path:
+    return Path(out_dir) / "model_meta.json"
+
+
+def write_meta(out_dir: str | Path, seed: int, rows: int, nonlinear: bool) -> None:
+    """Remember the training options next to the saved model."""
+    path = meta_path(out_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"seed": seed, "rows": rows, "nonlinear": nonlinear}))
+
+
+def read_meta(out_dir: str | Path) -> dict | None:
+    """Return the saved training options, or None when missing or unreadable (older models)."""
+    try:
+        meta = json.loads(meta_path(out_dir).read_text())
+    except (OSError, ValueError):
+        return None
+    if not isinstance(meta, dict) or not {"seed", "rows", "nonlinear"} <= meta.keys():
+        return None
+    return meta
 
 
 def load_model(out_dir: str | Path) -> PipelineModel | None:
