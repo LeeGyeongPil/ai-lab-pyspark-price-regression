@@ -277,7 +277,7 @@ Warning: the predicted price is negative. A straight-line model is just a formul
 ![predict step: a normal prediction and an out-of-range warning](docs/images/07-predict.png)
 <sub>A normal prediction, then a request far outside the training range, which produces a negative price and warnings.</sub>
 
-What it means: the first call trains and saves a model to `artifacts/model`, and later calls load it. The `No saved model` line appears only if no model is saved yet; `all` already saves one, so you will not see it after the quick start. A model only knows what it was shown: an unseen body type is rejected, and a car far outside the training range gets a number with a warning instead of a confident answer.
+What it means: the first call trains and saves a model to `artifacts/model`, and later calls load it. Once a model is saved, `--seed`, `--rows` and `--nonlinear` do not apply to `predict`; if they differ from the saved model's, one line says which options it was trained with and which folder to delete to retrain. The `No saved model` line appears only if no model is saved yet; `all` already saves one, so you will not see it after the quick start. A model only knows what it was shown: an unseen body type is rejected, and a car far outside the training range gets a number with a warning instead of a confident answer.
 
 ### Bonus: the dummy-variable trap (`trap`)
 
